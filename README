@@ -1,0 +1,109 @@
+WHAT
+====
+This is a demo of the DXLR02 LoRa modules.
+It's quick and dirty, and a little fragile:
+  eg. You MUST put the Port config above the Lora Config in the config file.
+
+FEATURE(S)
+==========
+The dx-lr02 modules ONLY function as a "virutal serial cable"
+No LoraWAN, No Mesahtastic, No <other stuff>.
+
+MORE README
+===========
+Read the DEMO config file for summary notes on the options.
+
+TL;DR
+=====
+To test your modules:
+	1. Connect them to your Linux box
+	2. Run:  ./test.sh dxlr02_A.conf dxlr02_B.conf
+
+NOT VISIBLE
+===========
+If the devices are "not visible"
+	1. disconnect the devices
+	2. run: `sudo dmesg -w`
+	3. reconnect the devices
+	4. read the device names as they scroll up the screen
+	   eg. usb 2-2.1: ch341-uart converter now attached to ttyUSB0
+	   The important bit is the "ttyUSB0" on the end
+
+If they are not ttyUSB0 and ttyUSB1,
+you will need to edit the names at the top of the _A and _B config files
+	DEV='/dev/ttyUSB0'
+
+RTFM
+====
+Take a moment to read all the info the first time it spews up the screen.
+There was a lot of information to covey - I've tried to be succinct.
+
+TEST.SH
+=======
+The test script simply runs `dxlr02.sh` for each device
+...and then opens up a couple of copies of `picocom`* in a `tmux`* shell
+
+DXLR02.SH
+=========
+The `dxlr02.sh` script reads
+	a) serial port config
+	   passed to `stty`
+	   allows the PC to talk to the dxlr02
+	b) lora config
+	   echoed to the serial device port
+	   allows the dxlr02's to talk to each other
+
+AT COMMANDS
+===========
+Each "AT command" MUST be suffixed with \r\n (aka CR/LF, or 0x0d 0x0a)
+...and MUST be transmitted as a single block of data.
+If you try to type it, or paste it, it throws ERROR's.
+
+PATIENCE
+========
+They are super flaky (try running `sudo dmesg -w` in another window!)
+	failed to send control message: -110  <-- this is a USB transmission error
+...So you may need to try a few times
+But once they are running, they seem pretty stable
+
+SPEED UP
+========
+It appears ALL settings are saved to NVRAM the moment they are set,
+so you only need to run the module config process after editing a config file
+  `./test` always needs two config files
+     but you can add "-skip" to skip the Lora config phase
+       eg. `./test.sh dxlr02_A.conf dxlr02_B.conf -skip`
+
+HARDWARE
+========
+There are 2 exposed IO ports, M0 and M1
+There is no documented way to utilise them !?
+There is also an undocumented AUX pin <shrug>
+
+You just need 4 wires ... {Tx-->Rx, Rx<--Tx, Vcc---5V, Gnd---Gnd}
+
+                                    ,--- 2nd row not used
+       +------------------------+   |
+ .M.   |    ___________     M0 o|   v
+ |H|   |   |           |    M1 o| +---------------+
+ |H|   |   |           |    Rx o|-|Oo Tx          |
+ |H|   |   |   LoRa    |    Tx o|-|Oo Rx   +---+  ----------
+ |H|  +|=  |           |   Aux o|x|Oo N/C  |341|  === USB ===> PC
+  @===#--  |___________|   Vcc o|-|Oo 5v   +---+  ----------
+      +|=                  Gnd o|-|Oo Gnd         |
+       +------------------------+ +---------------+
+
+* `picocom` was just FAR more stable than `minicom`
+* `tmux` is (imho) easier to script than `screen`
+
+
+LICENCE
+=======
+
+MIT ... "Free as in Free"
+
+It's knowledge. Share it; use it; improve on it; make money from it; whatever.
+...Just have fun!
+
+If you want to tell me what you've done with it, that'd be awesome :)
+	github.com/csbluechip
